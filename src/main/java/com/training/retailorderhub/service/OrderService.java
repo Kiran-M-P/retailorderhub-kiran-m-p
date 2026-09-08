@@ -4,6 +4,8 @@ import com.training.retailorderhub.model.Order;
 import com.training.retailorderhub.repository.OrderRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +21,17 @@ import java.util.List;
  * code — Day 2 refactors it through the SOLID principles.
  */
 @Service
-public class OrderManager {
+public class OrderService {
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired 
+    private PaymentService paymentService;
+
     private final OrderRepository orderRepository;
 
-    public OrderManager(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
 
@@ -51,15 +56,20 @@ public class OrderManager {
             }
         }
 
-        // Process payment
-        if (paymentMethod.equals("CREDIT_CARD")) {
-            System.out.println("Charging credit card: " + amount);
-        } else if (paymentMethod.equals("PAYPAL")) {
-            System.out.println("Charging PayPal: " + amount);
-        } else if (paymentMethod.equals("GIFT_CARD")) {
-            System.out.println("Charging gift card: " + amount);
-        } else {
-            System.out.println("Unknown payment method: " + paymentMethod);
+        // // Process payment
+        // if (paymentMethod.equals("CREDIT_CARD")) {
+        //     System.out.println("Charging credit card: " + amount);
+        // } else if (paymentMethod.equals("PAYPAL")) {
+        //     System.out.println("Charging PayPal: " + amount);
+        // } else if (paymentMethod.equals("GIFT_CARD")) {
+        //     System.out.println("Charging gift card: " + amount);
+        // } else {
+        //     System.out.println("Unknown payment method: " + paymentMethod);
+        //     return false;
+        // }
+
+        if(!paymentService.charge(paymentMethod, amount))
+        {
             return false;
         }
 

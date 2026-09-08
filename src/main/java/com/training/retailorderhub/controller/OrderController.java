@@ -2,7 +2,7 @@ package com.training.retailorderhub.controller;
 
 import com.training.retailorderhub.repository.OrderRepository;
 import com.training.retailorderhub.repository.ProductRepository;
-import com.training.retailorderhub.service.OrderManager;
+import com.training.retailorderhub.service.OrderService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,11 +18,11 @@ public class OrderController {
 
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
-    private final OrderManager orderManager;
+    private final OrderService orderManager;
 
     public OrderController(ProductRepository productRepository,
                             OrderRepository orderRepository,
-                            OrderManager orderManager) {
+                            OrderService orderManager) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.orderManager = orderManager;
