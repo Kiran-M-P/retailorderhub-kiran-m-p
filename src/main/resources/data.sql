@@ -1,5 +1,8 @@
-INSERT INTO product (name, price, quantity) VALUES ('Laptop', 999.99, 15);
-INSERT INTO product (name, price, quantity) VALUES ('Mouse', 19.99, 100);
-INSERT INTO product (name, price, quantity) VALUES ('Keyboard', 49.99, 60);
-INSERT INTO product (name, price, quantity) VALUES ('Monitor', 199.99, 30);
-INSERT INTO product (name, price, quantity) VALUES ('Headphones', 79.99, 45);
+-- Sample product inventory so a test order can succeed out of the box.
+-- The `product` table itself is created by Hibernate from the Product
+-- entity (ddl-auto=create-drop, defer-datasource-initialization=true) -
+-- this script only seeds rows, matching Day 1's data.sql pattern.
+-- JpaInventoryRepository and ProductRepository both query this table.
+INSERT INTO product (name, price, quantity) VALUES ('widget', 9.99, 25);
+INSERT INTO product (name, price, quantity) VALUES ('gadget', 24.99, 10);
+INSERT INTO product (name, price, quantity) VALUES ('gizmo', 14.99, 0);

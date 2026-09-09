@@ -1,11 +1,18 @@
 package com.training.retailorderhub.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+/**
+ * DISPLAY-ONLY, mirrors Day 1's Product entity so the order form can show
+ * a Product Catalog table (same purpose as Day 1's: let people see valid
+ * item names, prices, and stock before submitting an order). Mapped to the
+ * same columns as Day 1's entity (id, name, price, quantity). This entity
+ * is separate from the SOLID lab surface (InventoryRepository /
+ * InventoryService / JpaInventoryRepository), which is untouched.
+ */
 @Entity
 public class Product {
 
@@ -13,7 +20,6 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
     private String name;
 
     private double price;
