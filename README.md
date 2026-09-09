@@ -1,100 +1,62 @@
-# RetailOrderHub
+# RetailOrderHub — Day 2 Model Copy
 
-Monolithic full-stack Java application built for the 5-day System Design training
-program. This is the **Day 1 baseline** — a deliberately simple, single-deployable
-Spring Boot app with one intentionally messy `OrderManager` class, used as the
-reference codebase for Day 1's Lab 1 (HLD vs LLD) and Lab 2 (SonarCloud) materials.
+System Design Training Program case study. This is the **facilitator/answer-key
+state of the project as of the end of Day 2** — after the SRP→DIP refactor
+(Lab 1) and the OCP Strategy Pattern exercise (Lab 2). It does **not** include
+Lab 3's DebitCardStrategy — that's the change participants make themselves
+during the GitHub Git Workflow lab, via their own branch and PR.
 
-## Stack
+## What changed since Day 1
 
-- **Java 17**
-- **Spring Boot 3.3** (Spring MVC + Thymeleaf server-rendered views — a true
-  monolith, one JAR serves both UI and backend)
-- **Spring Data JPA + H2** (in-memory, zero setup — resets on every restart)
-- **Maven**
+- `OrderManager` (the Day 1 God Object) is gone. It's now three focused
+  collaborators:
+  - `service/OrderService.java` — orchestration only (validate → check stock
+    → charge → persist → update stock)
+  - `service/InventoryService.java` — stock checks and updates
+  - `service/PaymentService.java` — payment, now via the Strategy pattern
+    instead of an if/else chain
+- `validateCustomer()` / `validateItems()` were deleted — they duplicated
+  inline checks and were never called (Day 1 Lab 3's Duplicated Code finding).
+- `InventoryService` depends on `repository/InventoryRepository.java` (an
+  interface), not on `EntityManager` directly (DIP). The only implementation
+  today is `JpaInventoryRepository`.
+- Payment methods are now individual `PaymentStrategy` classes
+  (`CreditCardStrategy`, `PayPalStrategy`, `GiftCardStrategy`,
+  `ApplePayStrategy`), auto-collected by Spring into a `Map<String,
+  PaymentStrategy>`. Adding a payment method no longer touches
+  `PaymentService.java` at all.
 
-## Prerequisites
+## What's deliberately NOT fixed
 
-- JDK 17 or later
-- Maven 3.9+ (or use your IDE's built-in Maven support)
+Day 2 is a SOLID exercise, not a security pass. Two Day 1 findings are
+**intentionally still present** so they stay valid discussion points:
+
+- **SQL injection** in `JpaInventoryRepository` — both native queries are
+  still built by string concatenation.
+- **TOCTOU race condition** in `OrderService.processOrder()` — stock is
+  checked in one loop and decremented in a separate later loop, with payment
+  in between.
+
+If you're using this as an answer key, don't "helpfully" patch these without
+flagging it to participants — the point is that a SOLID refactor doesn't
+automatically fix structural/security issues.
 
 ## Running it
 
-```bash
+```
 mvn spring-boot:run
 ```
 
-Or build a JAR and run it directly:
+Then open `http://localhost:8080`. Sample inventory (`widget`, `gadget`,
+`gizmo`) is seeded on startup via `data.sql` — `gizmo` is seeded at 0 quantity
+so you can test the out-of-stock path. The H2 console is available at
+`http://localhost:8080/h2-console` (JDBC URL `jdbc:h2:mem:retailorderhub`).
 
-```bash
-mvn clean package
-java -jar target/retailorderhub.jar
-```
+## Lab-by-lab map
 
-Then open:
-
-- **http://localhost:8080/** — product catalog + order form
-- **http://localhost:8080/orders** — list of placed orders
-- **http://localhost:8080/h2-console** — H2 database console (JDBC URL:
-  `jdbc:h2:mem:retailorderhub`, user `sa`, no password) — for poking at the data
-  directly during training; note this is enabled here for teaching purposes only
-  and should never be left on in a real deployment
-
-## Placing a test order
-
-On the home page, use one of the seeded product names exactly as shown in the
-catalog (e.g. `Laptop, Mouse`), any customer ID, and any payment method. A
-successful order will appear on the `/orders` page.
-
-## About `OrderManager`
-
-`src/main/java/com/training/retailorderhub/service/OrderManager.java` is
-**deliberately** written the way a real legacy class often looks, to give Day 1's
-labs something concrete to analyze:
-
-| Smell / Issue | Where |
-|---|---|
-| God Object / Long Method | `processOrder()` handles validation, inventory checks, payment, persistence, and inventory updates all in one method |
-| Duplicated Code | `validateCustomer()` / `validateItems()` repeat logic already inline at the top of `processOrder()` |
-| Primitive Obsession | `paymentMethod` is a raw `String` compared with `.equals()` instead of an enum or strategy |
-| SQL Injection (Vulnerability) | `getInventoryQuantity()` and the inventory-update query in `processOrder()` build native SQL by directly concatenating `itemName` |
-
-This is intentional and matches the code referenced in the Day 1 Lab 1 worksheet
-and the Lab 2 SonarCloud demo/lab documents. **Do not use this class as a model
-for production code** — Day 2 refactors it through the SOLID principles.
-
-## Running the Day 1 SonarCloud scan against this project
-
-```bash
-mvn clean verify sonar:sonar \
-  -Dsonar.projectKey=<your-project-key> \
-  -Dsonar.organization=<your-org> \
-  -Dsonar.host.url=https://sonarcloud.io \
-  -Dsonar.login=$SONAR_TOKEN
-```
-
-See the Lab 2 documents for the full demo script and hands-on steps.
-
-## Project structure
-
-```
-retailorderhub/
-├── pom.xml
-├── README.md
-└── src/main/
-    ├── java/com/training/retailorderhub/
-    │   ├── RetailOrderHubApplication.java
-    │   ├── controller/OrderController.java
-    │   ├── model/Product.java
-    │   ├── model/Order.java
-    │   ├── repository/ProductRepository.java
-    │   ├── repository/OrderRepository.java
-    │   └── service/OrderManager.java
-    └── resources/
-        ├── application.properties
-        ├── data.sql
-        ├── static/css/style.css
-        └── templates/
-            ├── index.html
-            └── orders.html
-```
+| Lab | What it does to this code |
+| --- | --- |
+| Day 2 Demo | Extracts `PaymentService` from `OrderManager` (if/else version) |
+| Lab 1 | Extracts `InventoryService` + `OrderService`, renames `OrderManager`, applies DIP to `InventoryService` |
+| Lab 2 | Rewrites `PaymentService` to the Strategy pattern, adds `ApplePayStrategy` |
+| Lab 3 | Participant's own repo — adds `DebitCardStrategy` via branch → commit → push → PR → merge |

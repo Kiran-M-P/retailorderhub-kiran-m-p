@@ -8,6 +8,11 @@ import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
+/**
+ * TRAINING NOTE: @Table(name = "orders") is required here - "ORDER" is a
+ * reserved SQL keyword, so a table literally named `order` fails to parse
+ * in H2 (and most databases). This matches Day 1's Order entity.
+ */
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -17,15 +22,10 @@ public class Order {
     private Long id;
 
     private String customerId;
-
     private String itemNames;
-
     private String paymentMethod;
-
     private double amount;
-
     private String status;
-
     private LocalDateTime createdAt;
 
     public Long getId() {
